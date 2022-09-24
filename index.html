@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Classer</title>
+</head>
+<body>
+    <div class="timetable">
+
+    </div>
+    <script>
+        const key = '9e04e32554c84eedb4ebd30a63157450';
+        const div__timetable = document.getElementsByClassName("timetable");
+            
+        function getToday(){
+            var date = new Date();
+            var year = date.getFullYear();
+            var month = ('0' + (1 + date.getMonth())).slice(-2);
+            var day = ('0' + date.getDate()).slice(-2);
+        
+            return year + month + day;
+        }
+        
+        const getTimetable = async () => {
+            const result = await fetch(`https://open.neis.go.kr/hub/misTimetable?KEY=${key}&Type=json&ATPT_OFCDC_SC_CODE=D10&SD_SCHUL_CODE=7251032&AY=2022&SEM=2&GRADE=3&CLASS_NM=2&TI_FROM_YMD=${getToday()}&TI_TO_YMD=${getToday()}`)
+                .then((response) => response.json())
+            return result;
+        }
+        
+        getTimetable().then(value => {
+            value.misTimetable[1].row.forEach(lesson => {
+                console.log(lesson.ITRT_CNTNT);
+                const ls = document.createElement("div");
+                ls.innerHTML = lesson.ITRT_CNTNT;
+                div__timetable[0].appendChild(ls)
+            });
+        });
+    </script>
+</body>
+</html>
