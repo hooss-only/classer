@@ -4,16 +4,30 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://kit.fontawesome.com/c852f63d80.js" crossorigin="anonymous"></script>
     <title>Classer</title>
 </head>
 <body>
-    <div class="timetable">
+    <style>
+        @import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.5/dist/web/static/pretendard.css");
 
+        body {
+            font-family: Pretendard, -apple-system, BlinkMacSystemFont, system-ui, Roboto, "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
+            margin: 0;
+            background-color: #101820;
+            color: #F2AA4C;
+        }
+    </style>
+    <!--시간표 구현-->
+    <div class="timetable">
+        <div class="today"></div>
+        <div class="tomorrow"></div>
     </div>
     <script>
         const key = '9e04e32554c84eedb4ebd30a63157450';
-        const div__timetable = document.getElementsByClassName("timetable");
-            
+        const div__timetable = document.getElementsByClassName("timetable")[0];
+        const week = ['일', '월', '화', '수', '목', '금', '토'];
+        
         function getToday(){
             var date = new Date();
             var year = date.getFullYear();
@@ -23,20 +37,77 @@
             return year + month + day;
         }
         
+        function getWeekday() {
+            return new Date().getDay();
+        }
+
         const getTimetable = async () => {
-            const result = await fetch(`https://open.neis.go.kr/hub/misTimetable?KEY=${key}&Type=json&ATPT_OFCDC_SC_CODE=D10&SD_SCHUL_CODE=7251032&AY=2022&SEM=2&GRADE=3&CLASS_NM=2&TI_FROM_YMD=${getToday()}&TI_TO_YMD=${getToday()}`)
+            const result = await fetch(`https://open.neis.go.kr/hub/misTimetable?KEY=${key}&Type=json&ATPT_OFCDC_SC_CODE=D10&SD_SCHUL_CODE=7251032&AY=2022&SEM=2&GRADE=3&CLASS_NM=2&TI_FROM_YMD=${getToday()}&TI_TO_YMD=${parseInt(getToday()) + 1}`)
                 .then((response) => response.json())
             return result;
         }
-        
-        getTimetable().then(value => {
-            value.misTimetable[1].row.forEach(lesson => {
-                console.log(lesson.ITRT_CNTNT);
+
+        function drawTable(weekday, Lessons, magicNumber){
+            const day = document.createElement("div");
+            day.innerHTML = week[weekday];
+            day.className = "day";
+            div__timetable.children[magicNumber].appendChild(day);
+
+            Lessons.forEach(lesson => {
                 const ls = document.createElement("div");
-                ls.innerHTML = lesson.ITRT_CNTNT;
-                div__timetable[0].appendChild(ls)
+                ls.innerHTML = lesson.ITRT_CNTNT.slice(1);
+                div__timetable.children[magicNumber].appendChild(ls);
             });
-        });
+        }
+
+        if (getWeekday() == 6 || getWeekday() == 0) {
+            const t = document.createElement("div")
+            t.innerHTML = "오늘은 주말이에요! <i class='fa-solid fa-fire'></i>";
+            div__timetable.appendChild(t);
+        } else {
+            getTimetable().then(value => {
+                console.log(value.misTimetable);
+
+                var todayLessons = [];
+                var tomorrowLessons = [];
+
+                value.misTimetable[1].row.forEach(lesson => {
+                    if (lesson.ALL_TI_YMD == getToday())
+                        todayLessons.push(lesson);
+                    else 
+                        tomorrowLessons.push(lesson);
+                });
+
+                drawTable(getWeekday(), todayLessons, 0);
+                drawTable(getWeekday() + 1 == 7 ? 0 : getWeekday() + 1, tomorrowLessons, 1);
+            });
+        }
     </script>
+    <style>
+        .timetable {
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .timetable div > div {
+            padding: 20px;
+            text-align: center;
+        }
+
+        .timetable .day {
+            font-weight: 700;
+            background-color: #F2AA4C;
+            color: #101820;
+        }
+
+        .timetable .today .day {
+            border-radius: 10px 0px 0px 0px;
+        }
+
+        .timetable .tomorrow .day {
+            border-radius: 0px 10px 0px 0px;
+        }
+    </style>
 </body>
 </html>
