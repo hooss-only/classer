@@ -8,6 +8,10 @@
     <title>Classer</title>
 </head>
 <body>
+    <script>
+        // 글로벌 선언
+        const key = '9e04e32554c84eedb4ebd30a63157450';
+    </script>
     <style>
         @import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.5/dist/web/static/pretendard.css");
 
@@ -24,7 +28,6 @@
         <div class="tomorrow"></div>
     </div>
     <script>
-        const key = '9e04e32554c84eedb4ebd30a63157450';
         const div__timetable = document.getElementsByClassName("timetable")[0];
         const week = ['일', '월', '화', '수', '목', '금', '토'];
         
@@ -35,10 +38,12 @@
             var day = ('0' + date.getDate()).slice(-2);
         
             return year + month + day;
+            // return "20220929"
         }
         
         function getWeekday() {
             return new Date().getDay();
+            // return 3;
         }
 
         const getTimetable = async () => {
@@ -66,7 +71,6 @@
             div__timetable.appendChild(t);
         } else {
             getTimetable().then(value => {
-                console.log(value.misTimetable);
 
                 var todayLessons = [];
                 var tomorrowLessons = [];
@@ -107,6 +111,31 @@
 
         .timetable .tomorrow .day {
             border-radius: 0px 10px 0px 0px;
+        }
+    </style>
+    <!--휴일 계산기 구현-->
+    </div>
+        <div class="holiday-counter">
+    </div> 
+    <script>
+        const SchoolSchedule = async () => {
+            const date = new Date();
+            const Schedule = fetch(`https://open.neis.go.kr/hub/SchoolSchedule?KEY=${key}&Type=json&ATPT_OFCDC_SC_CODE=D10&SD_SCHUL_CODE=7251032&AA_YMD=${date.getFullYear() + "0" + (date.getMonth() + 1)}`)
+                .then((response) => response.json());
+            return Schedule;
+        }
+
+        SchoolSchedule().then(value => {
+            let a = 0;
+            value.SchoolSchedule[1].row.forEach(x => a++);
+            const t = document.createElement('span');
+            t.innerHTML = `이번 달에 존재하는 휴일의 개수는 ${a}일 입니다!`;
+            document.getElementsByClassName("holiday-counter")[0].appendChild(t);
+        });
+    </script>
+    <style>
+        .holiday-counter {
+            text-align: center;
         }
     </style>
 </body>
